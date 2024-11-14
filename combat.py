@@ -1,28 +1,34 @@
-from utils import calculate_damage
-
 class Combat:
-    def __init__(self, player, monster):
+    def __init__(self, player, monster, inventory):
         self.player = player
         self.monster = monster
+        self.inventory = inventory
 
     def start(self):
-        while self.player.is_alive() and self.monster.is_alive():
-            action = input("Choose your action: [Attack, Use Item, Flee] ").lower()
+        print(f"A battle begins between {self.player.name} and {self.monster.name}!")
+        
+        while self.player.is_alive() and self.monster.is_alive:
+            action = input("Choose an action: [Attack, Use Item, Run] ").lower()
+            
             if action == "attack":
-                damage = calculate_damage(self.player.attack, self.monster.defense)
-                self.monster.take_damage(damage)
-                print(f"You dealt {damage} damage to the {self.monster.name}.")
+                self.player.attack_enemy(self.monster)
+                if not self.monster.is_alive:
+                    print(f"{self.monster.name} has been defeated!")
+                    self.player.gain_xp(20)
+                    break
+                self.monster.attack_enemy(self.player)
+                if not self.player.is_alive():
+                    print("You have been defeated!")
+                    break
+
             elif action == "use item":
-                # Implement item usage
-                pass
-            elif action == "flee":
-                print("You fled the battle.")
+                self.inventory.use_item(self.player)
+
+            elif action == "run":
+                print("You ran away from the battle!")
                 break
-            if self.monster.is_alive():
-                damage = calculate_damage(self.monster.attack, self.player.defense)
-                self.player.take_damage(damage)
-                print(f"The {self.monster.name} dealt {damage} damage to you.")
-        if not self.player.is_alive():
-            print("You were defeated!")
-        elif not self.monster.is_alive():
-            print(f"You defeated the {self.monster.name}!")
+
+            else:
+                print("Invalid action. Please choose again.")
+
+        self.player.end_combat()
